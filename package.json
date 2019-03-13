@@ -1,0 +1,12 @@
+{
+  "name": "vuleprerender",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "start": "node ./app.js"
+  },
+  "dependencies": {
+    "express": "~4.16.0",
+    "puppeteer": "^1.13.0"
+  }
+}
