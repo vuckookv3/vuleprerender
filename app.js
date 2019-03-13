@@ -4,7 +4,10 @@ const { normalizePort, onError, onListening, URLChecker } = require('./helpers')
 const config = require('./config');
 const Browser = require('./Browser');
 const chrome = new Browser();
+const apicache = require('apicache');
 const app = express();
+
+const cache = apicache.middleware;
 
 const dontLoad = ['stylesheet', 'image', 'media', 'font']
 
@@ -13,9 +16,9 @@ const dontLoad = ['stylesheet', 'image', 'media', 'font']
 const port = normalizePort(process.env.PORT || config.port || '3010');
 app.set('port', port);
 
-app.get('/*', URLChecker, async (req, res) => {
+app.get('/*', URLChecker, cache('7 days'), async (req, res) => {
     const url = req.params[0];
-    console.log(url)
+
     const browser = await chrome.browser;
     const page = await browser.newPage();
     try {
@@ -26,8 +29,7 @@ app.get('/*', URLChecker, async (req, res) => {
         })
 
         await page.goto(url, { waitUntil: 'networkidle2', timeout: config.timeout || 30000 });
-        console.log('POSLE GOTO')
-        console.log()
+
         const meta = await page.evaluate(() => ([...document.querySelectorAll('head > meta')].map(e => e.outerHTML).join('')))
         await page.close();
 
@@ -35,7 +37,7 @@ app.get('/*', URLChecker, async (req, res) => {
     } catch (err) {
         await page.close();
         console.error(err);
-        return res.send(config.defaultMeta);
+        return res.send(config.errorMeta);
     }
 
 })
