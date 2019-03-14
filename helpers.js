@@ -7,7 +7,7 @@ module.exports = {
         if (port >= 0) return port;
         return false;
     },
-    onError: (error) => {
+    onError: (error, port) => {
         if (error.syscall !== 'listen') throw error;
 
         const bind = typeof port === 'string'

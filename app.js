@@ -46,6 +46,6 @@ app.get('/*', URLChecker, cache('7 days'), async (req, res) => {
 // make server
 const server = http.createServer(app);
 server.listen(port);
-server.on('error', (err) => onError(err));
+server.on('error', (err) => onError(err, port));
 server.on('listening', () => onListening(server));
 
