@@ -18,6 +18,7 @@ app.set('port', port);
 
 app.get('/*', URLChecker, cache('7 days'), async (req, res) => {
     const startedReq = Date.now();
+    console.log(`User-Agent: ${req.headers["user-agent"]}`)
     const url = req.params[0];
 
     const browser = await chrome.browser;
