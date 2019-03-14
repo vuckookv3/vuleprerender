@@ -17,6 +17,7 @@ const port = normalizePort(process.env.PORT || config.port || '3010');
 app.set('port', port);
 
 app.get('/*', URLChecker, cache('7 days'), async (req, res) => {
+    const startedReq = Date.now();
     const url = req.params[0];
 
     const browser = await chrome.browser;
@@ -29,14 +30,14 @@ app.get('/*', URLChecker, cache('7 days'), async (req, res) => {
         })
 
         await page.goto(url, { waitUntil: 'networkidle2', timeout: config.timeout || 30000 });
-
+        console.log(`Page has been loaded in: ${Date.now() - startedReq} ms.\nPage URL is: ${req.params[0]}`)
         const meta = await page.evaluate(() => ([...document.querySelectorAll('head > meta')].map(e => e.outerHTML).join('')))
         await page.close();
 
         return res.send(`<!doctype html><html><head>${meta}</head></html>`);
     } catch (err) {
         await page.close();
-        console.error(err);
+        console.error(`There was an error loading page: ${req.params[0]}.\nError: ${err}`);
         return res.send(config.errorMeta);
     }
 
