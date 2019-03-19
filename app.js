@@ -38,7 +38,7 @@ app.get('/*', URLChecker, cache('7 days'), async (req, res) => {
         return res.send(`<!doctype html><html><head>${meta}</head></html>`);
     } catch (err) {
         await page.close();
-        console.error(`There was an error loading page: ${req.params[0]}.\nError: ${err}`);
+        console.error(`There was an error loading page: ${req.params[0]}.\nError: ${err}\n`);
         return res.send(config.errorMeta);
     }
 
