@@ -30,9 +30,9 @@ app.get('/*', URLChecker, cache('7 days', onlyStatus200), async (req, res) => {
             if (dontLoad.includes(req.resourceType())) return req.abort();
             return req.continue();
         })
-
+        await page.setUserAgent('Prerender')
         await page.goto(url, { waitUntil: 'networkidle2', timeout: config.timeout || 30000 });
-        console.log(`Page has been loaded in: ${Date.now() - startedReq} ms.\nPage URL is: ${req.params[0]}`)
+        console.log(`Page has been loaded in: ${Date.now() - startedReq} ms.\nPage URL is: ${req.params[0]}\n`)
         const meta = await page.evaluate(() => ([...document.querySelectorAll('head > meta')].map(e => e.outerHTML).join('')))
         await page.close();
 
