@@ -6,6 +6,7 @@ const Browser = require('./Browser');
 const chrome = new Browser();
 const apicache = require('apicache');
 const app = express();
+const onlyStatus200 = (req, res) => res.statusCode === 200
 
 const cache = apicache.middleware;
 
@@ -16,9 +17,9 @@ const dontLoad = ['stylesheet', 'image', 'media', 'font']
 const port = normalizePort(process.env.PORT || config.port || '3010');
 app.set('port', port);
 
-app.get('/*', URLChecker, cache('7 days'), async (req, res) => {
+app.get('/*', URLChecker, cache('7 days', onlyStatus200), async (req, res) => {
     const startedReq = Date.now();
-    console.log(`User-Agent: ${req.headers["user-agent"]}`)
+    // console.log(`User-Agent: ${req.headers["user-agent"]}`)
     const url = req.params[0];
 
     const browser = await chrome.browser;
@@ -39,7 +40,7 @@ app.get('/*', URLChecker, cache('7 days'), async (req, res) => {
     } catch (err) {
         await page.close();
         console.error(`There was an error loading page: ${req.params[0]}.\nError: ${err}`);
-        return res.send(config.errorMeta);
+        return res.status(400).send(config.errorMeta);
     }
 
 })
