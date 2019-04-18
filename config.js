@@ -17,7 +17,7 @@ const defaultMeta = `
 
 module.exports = {
     port: undefined,
-    allowedURLs: ['https://reflektor.rs'],      // include schema and subdomain
+    allowedURLs: ['https://reflektor.rs', 'https://idjtv.com'],      // include schema and subdomain
     timeout: undefined,                         // in ms
     defaultMeta,
     errorMeta,

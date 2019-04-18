@@ -17,7 +17,7 @@ const dontLoad = ['stylesheet', 'image', 'media', 'font']
 const port = normalizePort(process.env.PORT || config.port || '3010');
 app.set('port', port);
 
-app.get('/*', URLChecker, cache('7 days', onlyStatus200), async (req, res) => {
+app.get('/*', URLChecker, cache('1 day', onlyStatus200), async (req, res) => {
     const startedReq = Date.now();
     // console.log(`User-Agent: ${req.headers["user-agent"]}`)
     const url = req.params[0];
