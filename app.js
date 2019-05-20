@@ -65,7 +65,7 @@ app.get('/*', URLChecker, /*cache('1 day', onlyStatus200),*/ async (req, res) =>
         const content = await page.content();
         await page.close();
         console.log(`Page has been loaded in: ${Date.now() - startedReq} ms.\nPage URL is: ${req.params[0]}\n`)
-        return res.send(content)
+        return res.send(`<!-- PRERENDER -->` + content)
     } catch (err) {
         await page.close();
         console.error(`There was an error loading page: ${req.params[0]}.\nError: ${err}`);
