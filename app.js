@@ -62,6 +62,9 @@ app.get('/*', URLChecker, /*cache('1 day', onlyStatus200),*/ async (req, res) =>
         await wait(100);
 
         const meta = await page.evaluate(() => ([...document.querySelectorAll('head > meta')].map(e => e.outerHTML).join('')))
+        const removeScripts = await page.evaluate(() => {
+            document.querySelectorAll('script').forEach(e => e.remove())
+        })
         const content = await page.content();
         await page.close();
         console.log(`Page has been loaded in: ${Date.now() - startedReq} ms.\nPage URL is: ${req.params[0]}\n`)
