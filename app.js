@@ -60,13 +60,21 @@ app.get('/*', URLChecker, /*cache('1 day', onlyStatus200),*/ async (req, res) =>
 
         // Some extra delay to let images load
         await wait(100);
-
+        await page.content();
         const meta = await page.evaluate(() => ([...document.querySelectorAll('head > meta')].map(e => e.outerHTML).join('')))
+        const removeModal = await page.evaluate(() => {
+            const modal = document.querySelector('#allowVideoPlayer');
+            console.log(modal)
+            if (modal) {
+                modal.remove();
+            }
+        })
         const removeScripts = await page.evaluate(() => {
             document.querySelectorAll('script').forEach(e => e.remove())
         })
+        console.log('aaaa')
         const content = await page.content();
-        await page.close();
+        // await page.close();
         console.log(`Page has been loaded in: ${Date.now() - startedReq} ms.\nPage URL is: ${req.params[0]}\n`)
         return res.send(`<!-- PRERENDER -->` + content)
     } catch (err) {
