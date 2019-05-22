@@ -37,7 +37,6 @@ module.exports = {
     URLChecker: (req, res, next) => {
         try {
             const parsedURL = new URL(req.params[0]);
-           console.log(parsedURL.pathname) 
             if (!config.allowedURLs.includes(parsedURL.origin)) throw new Error('That URL is not allowed');
             return next();
         } catch (error) {
@@ -45,5 +44,7 @@ module.exports = {
                 message: 'Invalid URL', error: error.message
             });
         }
-    }
+    },
+    wait: (ms) => new Promise(resolve => setTimeout(() => resolve(), ms)),
+    
 }

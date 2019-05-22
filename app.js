@@ -1,29 +1,20 @@
 const express = require('express');
 const http = require('http');
-const { normalizePort, onError, onListening, URLChecker } = require('./helpers');
+const { normalizePort, onError, onListening, URLChecker, wait } = require('./helpers');
 const config = require('./config');
-const Browser = require('./Browser');
-const chrome = new Browser();
-const apicache = require('apicache');
+const cache = require('./cache');
+// const Browser = require('./Browser');
+// const chrome = new Browser();
 const app = express();
-const onlyStatus200 = (req, res) => res.statusCode === 200
-
-const cache = apicache.middleware;
 
 const dontLoad = ['image', 'media', 'fonts', 'stylesheet']
-
-function wait(ms) {
-    return new Promise(resolve => setTimeout(() => resolve(), ms));
-}
-
 
 // port
 const port = normalizePort(process.env.PORT || config.port || '3010');
 app.set('port', port);
 
-app.get('/*', URLChecker, /*cache('1 day', onlyStatus200),*/ async (req, res) => {
+app.get('/*', URLChecker, async (req, res) => {
     const startedReq = Date.now();
-    // console.log(`User-Agent: ${req.headers["user-agent"]}`)
     const url = req.params[0];
 
     const browser = await chrome.browser;
@@ -42,7 +33,7 @@ app.get('/*', URLChecker, /*cache('1 day', onlyStatus200),*/ async (req, res) =>
         const { height } = await bodyHandle.boundingBox();
         await bodyHandle.dispose();
 
-        // Scroll one viewport at a time, pausing to let content load
+        // scrolling because of lazy load
         const viewportHeight = page.viewport().height;
         let viewportIncr = 0;
         while (viewportIncr + viewportHeight < height) {
@@ -52,30 +43,21 @@ app.get('/*', URLChecker, /*cache('1 day', onlyStatus200),*/ async (req, res) =>
             await wait(200);
             viewportIncr = viewportIncr + viewportHeight;
         }
-
-        // Scroll back to top
         await page.evaluate(_ => {
             window.scrollTo(0, 0);
         });
-
-        // Some extra delay to let images load
         await wait(100);
         await page.content();
-        const meta = await page.evaluate(() => ([...document.querySelectorAll('head > meta')].map(e => e.outerHTML).join('')))
-        const removeModal = await page.evaluate(() => {
-            const modal = document.querySelector('#allowVideoPlayer');
-            console.log(modal)
-            if (modal) {
-                modal.remove();
-            }
-        })
-        const removeScripts = await page.evaluate(() => {
-            document.querySelectorAll('script').forEach(e => e.remove())
-        })
-        console.log('aaaa')
+
+
+        const meta = await page.evaluate(() => ([...document.querySelectorAll('head > meta')].map(e => e.outerHTML).join('')));
+        await page.evaluate(() => { document.querySelectorAll('script').forEach(e => e.remove()) });
+
         const content = await page.content();
-        // await page.close();
-        console.log(`Page has been loaded in: ${Date.now() - startedReq} ms.\nPage URL is: ${req.params[0]}\n`)
+        await page.close();
+
+        console.log(`Page has been loaded in: ${Date.now() - startedReq} ms.\nPage URL is: ${req.params[0]}\n`);
+
         return res.send(`<!-- PRERENDER -->` + content)
     } catch (err) {
         await page.close();
