@@ -7,7 +7,7 @@ const Browser = require('./Browser');
 const chrome = new Browser();
 const app = express();
 
-const dontLoad = ['image', 'media', 'fonts', 'stylesheet']
+const dontLoad = ['media', 'fonts', 'stylesheet']
 
 // port
 const port = normalizePort(process.env.PORT || config.port || '3010');
@@ -19,6 +19,7 @@ app.get('/*', URLChecker, async (req, res) => {
 
     const browser = await chrome.browser;
     const page = await browser.newPage();
+    await page.setViewport({ width: 1920, height: 1080 });
     try {
         await page.setRequestInterception(true)
         page.on('request', (req) => {
@@ -40,7 +41,7 @@ app.get('/*', URLChecker, async (req, res) => {
             await page.evaluate(_viewportHeight => {
                 window.scrollBy(0, _viewportHeight);
             }, viewportHeight);
-            await wait(200);
+            await wait(20);
             viewportIncr = viewportIncr + viewportHeight;
         }
         await page.evaluate(_ => {
