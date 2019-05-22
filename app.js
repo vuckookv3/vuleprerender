@@ -3,8 +3,8 @@ const http = require('http');
 const { normalizePort, onError, onListening, URLChecker, wait } = require('./helpers');
 const config = require('./config');
 const cache = require('./cache');
-// const Browser = require('./Browser');
-// const chrome = new Browser();
+const Browser = require('./Browser');
+const chrome = new Browser();
 const app = express();
 
 const dontLoad = ['image', 'media', 'fonts', 'stylesheet']
