@@ -41,7 +41,7 @@ app.get('/*', URLChecker, async (req, res) => {
             await page.evaluate(_viewportHeight => {
                 window.scrollBy(0, _viewportHeight);
             }, viewportHeight);
-            await wait(60);
+            await wait(100);
             viewportIncr = viewportIncr + viewportHeight;
         }
         await page.evaluate(_ => {
