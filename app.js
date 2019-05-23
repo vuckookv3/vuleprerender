@@ -2,20 +2,21 @@ const express = require('express');
 const http = require('http');
 const { normalizePort, onError, onListening, URLChecker, wait } = require('./helpers');
 const config = require('./config');
-const cache = require('./cache');
+const { redis, cache } = require('./cache');
 const Browser = require('./Browser');
 const chrome = new Browser();
 const app = express();
 
-const dontLoad = ['media', 'fonts', 'stylesheet']
+const dontLoad = ['media', 'fonts', 'stylesheet'];
 
 // port
 const port = normalizePort(process.env.PORT || config.port || '3010');
 app.set('port', port);
 
-app.get('/*', URLChecker, async (req, res) => {
+app.get('/*', URLChecker, cache, async (req, res) => {
     const startedReq = Date.now();
-    const url = req.params[0];
+    let url = new URL(req.params[0]);
+    url = url.origin + url.pathname;
 
     const browser = await chrome.browser;
     const page = await browser.newPage();
@@ -41,7 +42,7 @@ app.get('/*', URLChecker, async (req, res) => {
             await page.evaluate(_viewportHeight => {
                 window.scrollBy(0, _viewportHeight);
             }, viewportHeight);
-            await wait(100);
+            await wait(200);
             viewportIncr = viewportIncr + viewportHeight;
         }
         await page.evaluate(_ => {
@@ -58,6 +59,10 @@ app.get('/*', URLChecker, async (req, res) => {
         await page.close();
 
         console.log(`Page has been loaded in: ${Date.now() - startedReq} ms.\nPage URL is: ${req.params[0]}\n`);
+
+
+        // save to redis
+        await redis.multi().set(url, content).expire(url, 60 * 60 * 24).exec();
 
         return res.send(`<!-- PRERENDER -->` + content)
     } catch (err) {
