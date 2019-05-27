@@ -13,6 +13,14 @@ const dontLoad = ['media', 'fonts', 'stylesheet'];
 const port = normalizePort(process.env.PORT || config.port || '3010');
 app.set('port', port);
 
+app.get('/extend', async (req, res) => {
+    const allKeys = await redis.keys('*');
+    for(const e of allKeys) {
+        await redis.expire(e, 60 * 60 * 24);
+    }
+    res.json('OK');
+})
+
 app.get('/*', URLChecker, cache, async (req, res) => {
     const startedReq = Date.now();
     let url = new URL(req.params[0]);
