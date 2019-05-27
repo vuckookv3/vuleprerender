@@ -70,7 +70,7 @@ app.get('/*', URLChecker, cache, async (req, res) => {
 
 
         // save to redis
-        await redis.multi().set(url, content).expire(url, 60 * 60 * 24).exec();
+        await redis.multi().set(url, `<!-- PRERENDER -->` + content).expire(url, 60 * 60 * 24).exec();
 
         return res.send(`<!-- PRERENDER -->` + content)
     } catch (err) {
