@@ -62,6 +62,7 @@ app.get('/*', URLChecker, cache, async (req, res) => {
 
         const meta = await page.evaluate(() => ([...document.querySelectorAll('head > meta')].map(e => e.outerHTML).join('')));
         await page.evaluate(() => { document.querySelectorAll('script').forEach(e => e.remove()) });
+        await page.evaluate(() => { document.querySelectorAll('iframe').forEach(e => e.remove()) });
 
         const content = await page.content();
         await page.close();
