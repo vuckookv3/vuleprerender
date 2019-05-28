@@ -7,7 +7,7 @@ const Browser = require('./Browser');
 const chrome = new Browser();
 const app = express();
 
-const dontLoad = ['media', 'fonts', 'stylesheet'];
+const dontLoad = ['image', 'media', 'fonts', 'stylesheet'];
 
 // port
 const port = normalizePort(process.env.PORT || config.port || '3010');
