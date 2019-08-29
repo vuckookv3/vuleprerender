@@ -16,11 +16,16 @@ const defaultMeta = `
 `
 
 module.exports = {
-    port: undefined,
-    allowedURLs: ['https://reflektor.rs', 'https://idjtv.com', 'https://najboljamamanasvetu.com', 'https://mame.rtech.rs'],      // include schema and subdomain
-    timeout: undefined,                         // in ms
+    port: 3010,
+    allowedURLs: [
+        'https://reflektor.rs',
+        'https://idjtv.com',
+        'https://najboljamamanasvetu.com',
+    ], // include schema and subdomain
+    timeout: 9000,     // in ms
     defaultMeta,
     errorMeta,
+    enableLogs: false
 }
 
 // sudo apt-get install redis-server

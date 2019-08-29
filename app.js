@@ -1,3 +1,4 @@
+require('dotenv').config({ path: `${__dirname}/.env` })
 const express = require('express');
 const http = require('http');
 const { normalizePort, onError, onListening, URLChecker, wait } = require('./helpers');
@@ -7,6 +8,9 @@ const Browser = require('./Browser');
 const chrome = new Browser();
 const app = express();
 
+const timeout = Number(process.env.TIMEOUT) || config.timeout || 30000;
+const enableLogs = Boolean(process.env.ENABLE_LOGS);
+
 const dontLoad = ['image', 'media', 'fonts', 'stylesheet'];
 
 // port
@@ -15,7 +19,7 @@ app.set('port', port);
 
 app.get('/extend', async (req, res) => {
     const allKeys = await redis.keys('*');
-    for(const e of allKeys) {
+    for (const e of allKeys) {
         await redis.expire(e, 60 * 60 * 24);
     }
     res.json('OK');
@@ -36,8 +40,13 @@ app.get('/*', URLChecker, cache, async (req, res) => {
             return req.continue();
         })
         await page.setUserAgent('Prerender')
-        await page.goto(url, { waitUntil: 'networkidle2', timeout: config.timeout || 30000 });
 
+        await page.goto(url, { waitUntil: 'networkidle2', timeout })
+            .catch(err => {
+                enableLogs && console.error(err.message);
+                enableLogs && console.error(url);
+                return Promise.resolve();
+            });
 
         const bodyHandle = await page.$('body');
         const { height } = await bodyHandle.boundingBox();
@@ -67,7 +76,7 @@ app.get('/*', URLChecker, cache, async (req, res) => {
         const content = await page.content();
         await page.close();
 
-        console.log(`Page has been loaded in: ${Date.now() - startedReq} ms.\nPage URL is: ${req.params[0]}\n`);
+        enableLogs && console.log(`Page has been loaded in: ${Date.now() - startedReq} ms.\nPage URL is: ${req.params[0]}\n`);
 
 
         // save to redis
@@ -76,7 +85,7 @@ app.get('/*', URLChecker, cache, async (req, res) => {
         return res.send(`<!-- PRERENDER -->` + content)
     } catch (err) {
         await page.close();
-        console.error(`There was an error loading page: ${req.params[0]}.\nError: ${err}`);
+        enableLogs && console.error(`There was an error loading page: ${req.params[0]}.\nError: ${err}`);
         return res.status(400).send(config.errorMeta);
     }
 

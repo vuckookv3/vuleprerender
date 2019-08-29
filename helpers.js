@@ -37,7 +37,7 @@ module.exports = {
     URLChecker: (req, res, next) => {
         try {
             const parsedURL = new URL(req.params[0]);
-            if (!config.allowedURLs.includes(parsedURL.origin)) throw new Error('That URL is not allowed');
+            // if (!config.allowedURLs.includes(parsedURL.origin)) throw new Error('That URL is not allowed');
             return next();
         } catch (error) {
             return res.status(400).json({
