@@ -81,13 +81,13 @@ app.get('/*', URLChecker, cache, async (req, res) => {
         })
 
         const content = await page.content();
-        // await page.close();
+        await page.close();
 
         enableLogs && console.log(`Page has been loaded in: ${Date.now() - startedReq} ms.\nPage URL is: ${req.params[0]}\n`);
 
 
         // save to redis
-        // await redis.multi().set(url, `<!-- PRERENDER -->` + content).expire(url, 60 * 60 * 24).exec();
+        await redis.multi().set(url, `<!-- PRERENDER -->` + content).expire(url, 60 * 60 * 24).exec();
 
         return res.send(`<!-- PRERENDER -->` + content)
     } catch (err) {
