@@ -6,7 +6,7 @@ class Browser {
             console.log('Launching browser...');
             this.browser = await puppeteer.launch({
                 headless: true,
-                args: ['--no-sandbox', '--disable-setuid-sandbox', '--window-size=320,568']
+                args: ['--no-sandbox', '--disable-setuid-sandbox', '--window-size=1920,1080']
             });
             this.browser.on("disconnected", createBrowser);
             console.log('Browser started!');

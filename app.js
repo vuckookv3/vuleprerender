@@ -8,6 +8,7 @@ const Browser = require('./Browser');
 const chrome = new Browser();
 const app = express();
 
+const debug = false;
 const timeout = Number(process.env.TIMEOUT) || config.timeout || 30000;
 const enableLogs = Boolean(process.env.ENABLE_LOGS);
 
@@ -28,11 +29,12 @@ app.get('/extend', async (req, res) => {
 app.get('/*', URLChecker, cache, async (req, res) => {
     const startedReq = Date.now();
     let url = new URL(req.params[0]);
+    const origin = url.origin;
     url = url.origin + url.pathname;
 
     const browser = await chrome.browser;
     const page = await browser.newPage();
-    await page.setViewport({ width: 1920, height: 1080 });
+    await page.setViewport({ width: 320, height: 568 });
     try {
         await page.setRequestInterception(true)
         page.on('request', (req) => {
@@ -72,15 +74,20 @@ app.get('/*', URLChecker, cache, async (req, res) => {
         const meta = await page.evaluate(() => ([...document.querySelectorAll('head > meta')].map(e => e.outerHTML).join('')));
         await page.evaluate(() => { document.querySelectorAll('script').forEach(e => e.remove()) });
         await page.evaluate(() => { document.querySelectorAll('iframe').forEach(e => e.remove()) });
+        debug && await page.evaluate(() => {
+            const base = document.createElement('base');
+            base.setAttribute('href', origin)
+            document.head.appendChild(base);
+        })
 
         const content = await page.content();
-        await page.close();
+        // await page.close();
 
         enableLogs && console.log(`Page has been loaded in: ${Date.now() - startedReq} ms.\nPage URL is: ${req.params[0]}\n`);
 
 
         // save to redis
-        await redis.multi().set(url, `<!-- PRERENDER -->` + content).expire(url, 60 * 60 * 24).exec();
+        // await redis.multi().set(url, `<!-- PRERENDER -->` + content).expire(url, 60 * 60 * 24).exec();
 
         return res.send(`<!-- PRERENDER -->` + content)
     } catch (err) {
