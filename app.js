@@ -96,7 +96,15 @@ app.get('/*', URLChecker, cache, async (req, res) => {
         return res.status(400).send(config.errorMeta);
     }
 
-})
+});
+
+app.delete('/*', URLChecker, async (req, res) => {
+    let url = new URL(req.params[0]);
+    url = url.origin + url.pathname;
+
+    await redis.del(url);
+    res.json('OK');
+});
 
 
 // make server
